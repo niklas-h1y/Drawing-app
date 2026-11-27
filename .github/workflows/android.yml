@@ -21,6 +21,8 @@ jobs:
           node-version: '20'
       - name: Install dependencies
         run: npm install
+      - name: Prepare PWA assets
+        run: npm run build:web
       - name: Generate Android project
         run: npx cap add android
       - name: Sync PWA into Android project
