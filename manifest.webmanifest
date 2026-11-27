@@ -1,0 +1,14 @@
+{
+  "id": "./",
+  "name": "Sketchpad — Drawing Studio",
+  "short_name": "Sketchpad",
+  "description": "A beautiful drawing studio that works offline.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#101116",
+  "theme_color": "#101116",
+  "categories": ["art", "productivity"],
+  "icons": [{"src":"./icons/icon.svg","sizes":"any","type":"image/svg+xml","purpose":"any maskable"}]
+}
