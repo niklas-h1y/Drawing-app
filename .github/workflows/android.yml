@@ -3,11 +3,12 @@ on:
   workflow_dispatch:
   push:
     branches: [main, feat/pwa-drawing-app]
-    paths: ['twa-manifest.json', '.github/workflows/android.yml']
+    paths: ['**', '.github/workflows/android.yml']
 permissions:
   contents: read
 jobs:
   build-apk:
+    name: Build installable Android APK
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -18,30 +19,19 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
-      - name: Install Bubblewrap
-        run: npm install --global @bubblewrap/cli
-      - name: Restore Android signing key
-        env:
-          KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
-        run: |
-          test -n "$KEYSTORE_BASE64" || (echo "Set ANDROID_KEYSTORE_BASE64 in repository secrets" && exit 1)
-          echo "$KEYSTORE_BASE64" | base64 --decode > android.keystore
+      - name: Install dependencies
+        run: npm install
+      - name: Generate Android project
+        run: npx cap add android
+      - name: Sync PWA into Android project
+        run: npx cap sync android
       - name: Build APK
-        env:
-          BUBBLEWRAP_KEYSTORE: ${{ github.workspace }}/android.keystore
-          BUBBLEWRAP_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
-          BUBBLEWRAP_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
-          BUBBLEWRAP_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
-        run: |
-          bubblewrap doctor
-          bubblewrap build --skipPwaValidation
+        working-directory: android
+        run: ./gradlew --no-daemon assembleDebug
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: sketchpad-android-apk
-          path: '**/app-release-signed.apk'
+          path: android/app/build/outputs/apk/debug/app-debug.apk
           if-no-files-found: error
-          retention-days: 14
-      - name: Clean up signing key
-        if: always()
-        run: rm -f android.keystore
+          retention-days: 30
